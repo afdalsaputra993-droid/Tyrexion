@@ -1,0 +1,53 @@
+$primary: #2563EB;
+$secondary: #0F172A;
+$light: #F8FAFC;
+
+$theme-colors: (
+  "primary": $primary,
+  "secondary": $secondary,
+  "light": $light,
+  "accent-cta": #F97316,
+  "warning": yellow,
+  "success": green
+);
+@import "~bootstrap/scss/bootstrap";
+
+// BUAT ALUR TIMELINE
+.timeline::before {
+        content: '';
+        position: absolute;
+        left: 30px; /* di tengah icon */
+        top: 0;
+        bottom: 0;
+        width: 3px;
+        background: #dee2e6; /* warna garis */
+        z-index: 0;
+      }
+      .timeline-icon {
+        position: relative;
+        z-index: 1; /* biar icon di atas garis */
+      }
+      .timeline-content {
+        position: relative;
+        z-index: 1;
+      }
+      @media (min-width: 768px) {
+        .timeline::before {
+          left: 50%;
+          transform: translateX(-50%);
+        }
+        .timeline-item {
+          width: 50%;
+        }
+        .timeline-item:nth-child(odd) {
+          align-self: flex-start;
+          padding-right: 3rem;
+          text-align: right;
+        }
+        .timeline-item:nth-child(even) {
+          align-self: flex-end;
+          margin-left: 50%;
+          padding-left: 3rem;
+          text-align: left;
+        }
+      }
