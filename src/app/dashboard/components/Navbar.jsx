@@ -1,15 +1,16 @@
 "use client";
-import { useUser } from '@/context/UserContext';
-import { useState, useEffect } from "react";
-import { motion } from "framer-motion";
+
+import Link from "next/link"
+
+import { useState, useEffect } from "react"
+  
 import { useSidebar } from "@/context/SidebarContext";
-import DesktopMenu from "@/components/DesktopMenu"
-import ButtonNav from "@/components/ButtonNav"
+import { motion } from "framer-motion";
+
 
 
 export default function Navbar() {
-  const user = useUser();
- const {toggle} = useSidebar();
+  const {toggle} = useSidebar();
  const [lastScrollY, setLastScrollY] = useState(0);
  const [showNav, setShowNav] = useState(true);
 
@@ -36,22 +37,19 @@ export default function Navbar() {
       animate={{ y: showNav ? 0 : -100 }} // pake framer biar halus
             transition={{ duration: 0.3, ease: "easeInOut" }}
         
-      className="p-3 position-fixed top-0 start-0 w-100 bg-white shadow-sm" style={{zIndex: 2}}>
+      className="p-3 position-sticky top-0 start-0 w-100 bg-white shadow-sm" style={{zIndex: 2}}>
       <div className="container">
         <div className="d-flex justify-content-between align-items-center">
+
+          <Link href="/"
+            className="btn btn-link text-secondary d-md-none p-0 border-0" 
+            style={{fontSize: '28px', lineHeight: 1}}
+            aria-label="kembali menu"
+          >
+            <i className="bi bi-arrow-left"></i>
+          </Link>
         
-          <div className="text-primary fs-3 fw-bold text-start">TYREXION</div>
-
-         <DesktopMenu />
-
-          <a 
-      href={user ? '/dashboard' : 'login'} 
-      target="_blank" 
-      className="btn btn-accent-cta rounded-pill btn-md fw-bold d-flex gap-2"
-    >
-      <span className="bi bi-box-arrow-in-right"></span>
-      {user ? 'dashboard' : 'login'}
-    </a>
+          <div className="text-primary fs-3 fw-bold text-center w-100">TYREXION</div>
 
           <button onClick={toggle}
             className="btn btn-link text-secondary d-md-none p-0 border-0" 

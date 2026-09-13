@@ -8,7 +8,9 @@ $theme-colors: (
   "light": $light,
   "accent-cta": #F97316,
   "warning": yellow,
-  "success": green
+  "success": green,
+  "danger": red,
+  "dark": $secondary
 );
 @import "~bootstrap/scss/bootstrap";
 
