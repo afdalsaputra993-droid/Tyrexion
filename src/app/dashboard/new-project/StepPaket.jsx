@@ -8,111 +8,120 @@ import LoadingSlot from './LoadingSlot';
 export default function StepPaket({ onNext }) {
   const [packages, setPackages] = useState([]);
   const [loading, setLoading] = useState(true);
-  const supabase = createClient();
 
   useEffect(() => {
-    async function fetchPackages() {
-      const { data } = await supabase
+    const fetchPackages = async () => {
+      const { data } = await createClient()
         .from('packages')
         .select('*')
         .eq('is_active', true)
         .order('price', { ascending: true });
+
       setPackages(data || []);
       setLoading(false);
-    }
+    };
+
     fetchPackages();
   }, []);
-
-  const containerVars = {
-    hidden: { opacity: 0 },
-    visible: { opacity: 1, transition: { staggerChildren: 0.1 } },
-  };
-  const itemVars = {
-    hidden: { y: 20, opacity: 0 },
-    visible: { y: 0, opacity: 1, transition: { type: 'spring', stiffness: 100 } },
-  };
 
   if (loading) return <LoadingSlot />;
 
   return (
     <div>
       {/* Header */}
-      <div className="text-center mb-4" style={{ maxWidth: 500, margin: '0 auto' }}>
-        <h2 className="fw-bold mb-2">Pilih Paket Website</h2>
-        <p className="text-secondary">Sesuaikan dengan kebutuhan dan anggaran Anda.</p>
+      <div className="text-center mx-auto mb-4" style={{ maxWidth: 600 }}>
+        <span className="badge text-bg-primary rounded-pill px-3 py-2 mb-3">
+          PILIHAN PAKET
+        </span>
+
+        <h2 className="fw-bold mb-2">
+          Pilih Paket Website
+        </h2>
+
+        <p className="text-secondary mb-0">
+          Sesuaikan dengan kebutuhan dan anggaran Anda.
+        </p>
       </div>
 
-      {/* Grid Paket */}
+      {/* Packages */}
       <motion.div
-        className="row g-3"
-        variants={containerVars}
+        className="row g-4 justify-content-center"
         initial="hidden"
-        animate="visible"
+        animate="show"
+        variants={{
+          hidden: {},
+          show: {
+            transition: { staggerChildren: 0.1 },
+          },
+        }}
       >
         {packages.map((pkg) => (
-          <motion.div key={pkg.id} className="col-12 col-md-4" variants={itemVars}>
+          <motion.div
+            key={pkg.id}
+            className="col-12 col-md-6 col-lg-4"
+            variants={{
+              hidden: { opacity: 0, y: 20 },
+              show: { opacity: 1, y: 0 },
+            }}
+          >
             <div
+              className="card h-100 border shadow-sm rounded-4 overflow-hidden"
+              role="button"
               onClick={() => onNext(pkg)}
-              className="card h-100 border-0 shadow-sm position-relative overflow-hidden"
-              style={{ cursor: 'pointer', transition: 'all 0.3s ease' }}
             >
-              {/* Header Kartu */}
-              <div className="card-header bg-white border-0 pt-4 px-4">
-                <h5 className="fw-bold mb-0">{pkg.name}</h5>
-              </div>
+              <div className="card-body p-4 d-flex flex-column">
 
-              <div className="card-body px-4 pb-4 d-flex flex-column">
-                {/* Harga */}
-                <div className="mb-3">
-                  <p className="text-uppercase small text-muted mb-1" style={{ letterSpacing: '0.5px' }}>
+                {/* Package */}
+                <h5 className="fw-bold mb-3">
+                  {pkg.name}
+                </h5>
+
+                {/* Price */}
+                <div className="mb-4">
+                  <small className="text-uppercase text-muted fw-semibold">
                     Investasi
-                  </p>
-                  <div className="d-flex flex-wrap align-items-baseline">
-                    <span
-                      className="fw-bold"
-                      style={{
-                        fontSize: '1.5rem',
-                        wordBreak: 'break-word',
-                        lineHeight: 1.2,
-                      }}
-                    >
-                      Rp {pkg.price.toLocaleString('id-ID')}
-                    </span>
+                  </small>
+
+                  <div className="fs-3 fw-bold mt-1">
+                    Rp {Number(pkg.price).toLocaleString('id-ID')}
                   </div>
-                  <p className="text-secondary small mt-2 mb-0">
-                    <i className="bi bi-layers me-1"></i>
-                    Maks {pkg.max_section === null ? 'Unlimited' : `${pkg.max_section} Section`}
-                  </p>
+
+                  <small className="text-secondary">
+                    <i className="bi bi-layers me-1" />
+                    {pkg.max_section === null
+                      ? 'Unlimited Section'
+                      : `Maks. ${pkg.max_section} Section`}
+                  </small>
                 </div>
 
-                {/* Fitur List */}
+                <hr />
+
+                {/* Features */}
                 <ul className="list-unstyled mb-4 flex-grow-1">
-                  {pkg.features?.map((f, i) => (
-                    <li key={i} className="d-flex align-items-start mb-2 small">
-                      <i className="bi bi-check-circle-fill text-success me-2 mt-1"></i>
-                      <span>{f}</span>
+                  {pkg.features?.map((feature, index) => (
+                    <li
+                      key={index}
+                      className="d-flex gap-2 mb-2 small text-secondary"
+                    >
+                      <i className="bi bi-check-circle-fill text-success" />
+                      <span>{feature}</span>
                     </li>
                   ))}
                 </ul>
 
-                {/* Tombol Pilih */}
-                <button className="btn btn-primary w-100 mt-auto">
+                {/* Button */}
+                <button
+                  type="button"
+                  className="btn btn-primary w-100"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onNext(pkg);
+                  }}
+                >
                   Pilih Paket Ini
+                  <i className="bi bi-arrow-right ms-2" />
                 </button>
               </div>
-
-              {/* Efek Hover Border Accent */}
-              <div
-                className="position-absolute top-0 start-0 w-100"
-                style={{
-                  height: '4px',
-                  backgroundColor: 'var(--bs-primary)',
-                  opacity: 0,
-                  transition: 'opacity 0.3s ease',
-                }}
-                onMouseEnter={(e) => (e.currentTarget.style.opacity = 1)}
-                onMouseLeave={(e) => (e.currentTarget.style.opacity = 0)}
-              />
             </div>
           </motion.div>
         ))}
