@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase';
 import { motion } from 'framer-motion';
-import LoadingSlot from './LoadingSlot'; 
+import LoadingSlot from './LoadingSlot';
 
 export default function StepPaket({ onNext }) {
   const [packages, setPackages] = useState([]);
@@ -23,88 +23,100 @@ export default function StepPaket({ onNext }) {
     fetchPackages();
   }, []);
 
-  // Animasi Variants
-  const containerVars = { hidden: { opacity: 0 }, visible: { opacity: 1, transition: { staggerChildren: 0.1 } } };
-  const itemVars = { hidden: { y: 20, opacity: 0 }, visible: { y: 0, opacity: 1, transition: { type: "spring", stiffness: 100 } } };
+  const containerVars = {
+    hidden: { opacity: 0 },
+    visible: { opacity: 1, transition: { staggerChildren: 0.1 } },
+  };
+  const itemVars = {
+    hidden: { y: 20, opacity: 0 },
+    visible: { y: 0, opacity: 1, transition: { type: 'spring', stiffness: 100 } },
+  };
 
-  if (loading) return <LoadingSlot teks="Memuat paket..." />;
+  if (loading) return <LoadingSlot />;
 
   return (
-    <motion.div 
-      className="container py-4"
-      variants={containerVars}
-      initial="hidden"
-      animate="visible"
-    >
+    <div>
       {/* Header */}
-      <div className="text-center mb-5 px-3">
-        <h2 className="fw-bold display-6 text-primary">Pilih Paket Website</h2>
-        <p className="text-muted lead mx-auto" style={{ maxWidth: '600px' }}>
-          Sesuaikan dengan kebutuhan dan anggaran Anda.
-        </p>
+      <div className="text-center mb-4" style={{ maxWidth: 500, margin: '0 auto' }}>
+        <h2 className="fw-bold mb-2">Pilih Paket Website</h2>
+        <p className="text-secondary">Sesuaikan dengan kebutuhan dan anggaran Anda.</p>
       </div>
 
-      {/* Grid System: Lebih lebar di Desktop (col-lg-4) */}
-      <div className="row g-4 justify-content-center">
+      {/* Grid Paket */}
+      <motion.div
+        className="row g-3"
+        variants={containerVars}
+        initial="hidden"
+        animate="visible"
+      >
         {packages.map((pkg) => (
-          <div key={pkg.id} className="col-12 col-md-6 col-lg-4">
-            <motion.div
-              variants={itemVars}
-              whileHover={{ scale: 1.02, translateY: -5 }}
-              whileTap={{ scale: 0.98 }}
+          <motion.div key={pkg.id} className="col-12 col-md-4" variants={itemVars}>
+            <div
               onClick={() => onNext(pkg)}
-              // Hapus overflow-hidden agar konten tidak terpotong, gunakan z-index untuk border
-              className="card h-100 border-0 shadow-sm position-relative"
-              style={{ cursor: 'pointer', transition: 'all 0.3s ease', zIndex: 1 }}
+              className="card h-100 border-0 shadow-sm position-relative overflow-hidden"
+              style={{ cursor: 'pointer', transition: 'all 0.3s ease' }}
             >
-              
-              {/* Efek Hover Border Accent (Diletakkan di luar card-body agar tidak memotong konten) */}
-              <div className="position-absolute top-0 start-0 w-100 h-100 border border-primary rounded-3" 
-                   style={{ opacity: 0, transition: 'opacity 0.3s', pointerEvents: 'none', zIndex: -1 }} 
-                   onMouseEnter={(e) => e.currentTarget.style.opacity = 1}
-                   onMouseLeave={(e) => e.currentTarget.style.opacity = 0}
-              />
+              {/* Header Kartu */}
+              <div className="card-header bg-white border-0 pt-4 px-4">
+                <h5 className="fw-bold mb-0">{pkg.name}</h5>
+              </div>
 
-              <div className="card-body d-flex flex-column p-4 pt-5"> {/* Tambah padding atas pt-5 */}
-                
-                {/* Header Kartu */}
-                <div className="text-center mb-3">
-                  <h4 className="fw-bold text-dark mb-0">{pkg.name}</h4>
-                </div>
-
-                {/* Harga Section */}
-                <div className="text-center mb-4 bg-light rounded-3 p-3 mx-2"> {/* Background tipis agar harga menonjol */}
-                  <span className="text-muted small text-uppercase fw-bold ls-1 d-block mb-1">Investasi</span>
-                  <h2 className="fw-bold text-primary mb-0 text-nowrap fs-3">
-                    Rp {pkg.price.toLocaleString('id-ID')}
-                  </h2>
-                  <div className="mt-2">
-                    <span className="badge bg-white text-dark border px-3 py-2 rounded-pill shadow-sm">
-                      <i className="bi bi-layers me-1 text-primary"></i>
-                      Maks {pkg.max_section === null ? 'Unlimited' : `${pkg.max_section} Section`}
+              <div className="card-body px-4 pb-4 d-flex flex-column">
+                {/* Harga */}
+                <div className="mb-3">
+                  <p className="text-uppercase small text-muted mb-1" style={{ letterSpacing: '0.5px' }}>
+                    Investasi
+                  </p>
+                  <div className="d-flex flex-wrap align-items-baseline">
+                    <span
+                      className="fw-bold"
+                      style={{
+                        fontSize: '1.5rem',
+                        wordBreak: 'break-word',
+                        lineHeight: 1.2,
+                      }}
+                    >
+                      Rp {pkg.price.toLocaleString('id-ID')}
                     </span>
                   </div>
+                  <p className="text-secondary small mt-2 mb-0">
+                    <i className="bi bi-layers me-1"></i>
+                    Maks {pkg.max_section === null ? 'Unlimited' : `${pkg.max_section} Section`}
+                  </p>
                 </div>
 
                 {/* Fitur List */}
-                <ul className="list-unstyled mb-4 flex-grow-1 text-start px-2">
+                <ul className="list-unstyled mb-4 flex-grow-1">
                   {pkg.features?.map((f, i) => (
-                    <li key={i} className="mb-3 d-flex align-items-start">
-                      <i className="bi bi-check-circle-fill text-success me-2 mt-1 flex-shrink-0"></i>
-                      <span className="text-secondary small lh-base">{f}</span>
+                    <li key={i} className="d-flex align-items-start mb-2 small">
+                      <i className="bi bi-check-circle-fill text-success me-2 mt-1"></i>
+                      <span>{f}</span>
                     </li>
                   ))}
                 </ul>
 
                 {/* Tombol Pilih */}
-                <button className="btn btn-primary w-100 rounded-pill py-2 fw-bold mt-auto shadow-sm">
+                <button className="btn btn-primary w-100 mt-auto">
                   Pilih Paket Ini
                 </button>
               </div>
-            </motion.div>
-          </div>
+
+              {/* Efek Hover Border Accent */}
+              <div
+                className="position-absolute top-0 start-0 w-100"
+                style={{
+                  height: '4px',
+                  backgroundColor: 'var(--bs-primary)',
+                  opacity: 0,
+                  transition: 'opacity 0.3s ease',
+                }}
+                onMouseEnter={(e) => (e.currentTarget.style.opacity = 1)}
+                onMouseLeave={(e) => (e.currentTarget.style.opacity = 0)}
+              />
+            </div>
+          </motion.div>
         ))}
-      </div>
-    </motion.div>
+      </motion.div>
+    </div>
   );
 }
