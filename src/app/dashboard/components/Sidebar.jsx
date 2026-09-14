@@ -13,7 +13,7 @@ import { useSidebar } from "@/context/SidebarContext";
 const menu = [
   { name: 'Overview', href: '/dashboard' },
   { name: 'Project Saya', href: '/dashboard/projectsaya' },
-  { name: 'Pengaturan', href: '/pengaturan' },
+  { name: 'Pengaturan', href: '/dashboard/pengaturan' },
 ]
 
 export default function Sidebar() {
@@ -67,19 +67,21 @@ export default function Sidebar() {
     >
       {/* 1. PROFIL */}
       <div className="d-flex w-100 gap-3 align-items-center border-bottom p-3">
-        <Image 
-          src={user.user_metadata?.avatar_url}
-          alt="Profil" 
-          className="rounded-circle border-2 border-primary shadow-sm"
-          width={50}
-          height={50}
-          priority
-        />
-        <div>
-          <h2 className="text-dark fs-6 fw-semibold mb-0">{user.user_metadata?.full_name}</h2>
-          <small className="text-secondary">{user.user_metadata?.email}</small>
-        </div>
-      </div>
+  <Image 
+    src={user.user_metadata?.avatar_url}
+    alt="Profil" 
+    className="rounded-circle border border-2 border-primary shadow-sm flex-shrink-0" // tambahin flex-shrink-0 biar avatar gak gepeng
+    width={50}
+    height={50}
+    priority
+  />
+  <div className="min-w-0"> {/* Fix 1: min-w-0 biar div ini bisa mengecil dan wrap */}
+    <h2 className="text-dark fs-6 fw-semibold mb-0 text-truncate">{user.user_metadata?.full_name}</h2> {/* nama kepanjangan kasih truncate */}
+    <small className="text-secondary text-break d-block"> {/* Fix 2: text-break + d-block biar email turun */}
+      {user.user_metadata?.email}
+    </small>
+  </div>
+</div>
       
       {/* 2. MENU */}
       <nav className="p-3 flex-grow-1 overflow-y-auto">

@@ -10,7 +10,7 @@ import { useEffect, useState } from "react";
 const menu = [
   { name: 'Overview', href: '/dashboard' },
   { name: 'Project Saya', href: '/dashboard/projectsaya' },
-  { name: 'Pengaturan', href: '/pengaturan' },
+  { name: 'Pengaturan', href: '/dashboard/pengaturan' },
 ]
 
 export default function MenuDrawer() {

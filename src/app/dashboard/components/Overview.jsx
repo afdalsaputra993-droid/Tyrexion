@@ -4,6 +4,7 @@ import { useUser } from '@/context/UserContext';
 import { createClient } from '@/lib/supabase';
 import Link from "next/link";
 import { motion } from "framer-motion";
+import LoadingSlot from "../new-project/LoadingSlot";
 
 import ProjectDetailModal from '../ProjectDetailModal';
 
@@ -57,9 +58,9 @@ export default function Overview() {
       >
         <div className="card-body p-4 d-flex flex-column align-items-center justify-content-center">
           <h2 className="fs-4 fw-bold mb-1">
-            Halo, {user.user_metadata?.full_name} 👋
+            Welcome, {user.user_metadata?.full_name} 👋
           </h2>
-          <p className="text-muted mb-0">Selamat datang kembali</p>
+          <p className="text-muted mb-0">Siap memperkenalkan bisnis atau usaha anda?</p>
         </div>
       </motion.div>
 
@@ -87,7 +88,7 @@ export default function Overview() {
         <h3 className="fs-5 fw-bold mb-3">Project Saya</h3>
 
         {loading ? (
-          <p className="text-muted">Memuat project...</p>
+          <LoadingSlot teks="Memuat project..." />
         ) : projects.length === 0 ? (
           <div className="card border-0 shadow-sm rounded-4 bg-light">
             <div className="card-body p-5 text-center">
