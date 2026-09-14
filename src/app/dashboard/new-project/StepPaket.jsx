@@ -26,13 +26,14 @@ export default function StepPaket({ onNext }) {
 
   // Animasi
   const container = { hidden: { opacity: 0 }, visible: { opacity: 1, transition: { staggerChildren: 0.1 } }};
-  const item = { hidden: { y: 20, opacity: 0 }, visible: { y: 0, opacity: 1, transition: { type: "spring", stiffness: 100 } } };
+  const item = { hidden: { y: 20, opacity: 0 }, visible: { y: 0, opacity: 1, transition: { type: "spring", stiffness: 100 } }};
 
   if (loading) return <LoadingSlot teks="Memuat paket..." />;
 
   return (
     <motion.div 
-      className="container py-5"
+      className="container-fluid px-3 px-lg-5 py-5" // Fix 1: container-fluid + padding gede di desktop
+      style={{ maxWidth: '1400px' }} // Fix 2: kasih max-width biar gak kepanjangan di layar 2K
       variants={container}
       initial="hidden"
       animate="visible"
@@ -43,17 +44,17 @@ export default function StepPaket({ onNext }) {
           <i className="bi bi-stars me-1"></i> PILIHAN PAKET
         </span>
         <h2 className="fw-bold display-5 text-primary">Pilih Paket Website</h2>
-        <p className="text-muted lead mx-auto" style={{ maxWidth: '600px' }}>
+        <p className="text-muted lead mx-auto" style={{ maxWidth: '700px' }}>
           Sesuaikan dengan kebutuhan dan anggaran Anda.
         </p>
       </div>
 
       {/* Packages */}
-      <div className="row g-4 justify-content-center">
+      <div className="row g-4 g-lg-5 justify-content-center"> {/* Fix 3: g-lg-5 gap lebih gede */}
         {packages.map((pkg) => (
           <motion.div 
             key={pkg.id} 
-            className="col-12 col-md-6 col-lg-4"
+            className="col-12 col-md-6 col-xl-4" // Fix 4: col-lg-4 -> col-xl-4. Jadi 2 kolom di laptop, 3 kolom di desktop gede
             variants={item}
           >
             <motion.div
@@ -70,12 +71,12 @@ export default function StepPaket({ onNext }) {
                 <h4 className="fw-bold mb-0 fs-4">{pkg.name}</h4>
               </div>
 
-              <div className="card-body d-flex flex-column p-4 p-md-5">
+              <div className="card-body d-flex flex-column p-4 p-xl-5"> {/* Fix 5: padding lebih gede di xl */}
                 {/* Price */}
                 <div className="text-center mb-4">
-                  <span className="text-muted small text-uppercase fw-bold ls-1">Investasi</span>
+                  <span className="text-muted small text-uppercase fw-bold">Investasi</span>
                   <div className="my-3">
-                    <h2 className="fw-bold text-primary mb-0 display-6 text-break">
+                    <h2 className="fw-bold text-primary mb-0 fs-1 text-break"> {/* Fix 6: fs-1 biar gede di desktop */}
                       Rp {Number(pkg.price).toLocaleString('id-ID')}
                     </h2>
                   </div>
