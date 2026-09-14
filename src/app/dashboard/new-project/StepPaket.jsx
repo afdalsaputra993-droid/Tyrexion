@@ -3,8 +3,6 @@
 import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase';
 import { motion } from 'framer-motion';
-
-// Jika Anda sudah membuat komponen LoadingSlot, import di sini:
 import LoadingSlot from './LoadingSlot'; 
 
 export default function StepPaket({ onNext }) {
@@ -29,7 +27,7 @@ export default function StepPaket({ onNext }) {
   const containerVars = { hidden: { opacity: 0 }, visible: { opacity: 1, transition: { staggerChildren: 0.1 } } };
   const itemVars = { hidden: { y: 20, opacity: 0 }, visible: { y: 0, opacity: 1, transition: { type: "spring", stiffness: 100 } } };
 
-  if (loading) <LoadingSlot teks="memuat paket..." />;
+  if (loading) return <LoadingSlot teks="Memuat paket..." />;
 
   return (
     <motion.div 
@@ -38,14 +36,18 @@ export default function StepPaket({ onNext }) {
       initial="hidden"
       animate="visible"
     >
-      <div className="text-center mb-5">
+      {/* Header dengan lebar terbatas agar rapi di desktop */}
+      <div className="text-center mb-5 px-3">
         <h2 className="fw-bold display-6 text-primary">Pilih Paket Website</h2>
-        <p className="text-muted lead">Sesuaikan dengan kebutuhan dan anggaran Anda.</p>
+        <p className="text-muted lead mx-auto" style={{ maxWidth: '600px' }}>
+          Sesuaikan dengan kebutuhan dan anggaran Anda.
+        </p>
       </div>
 
+      {/* Grid System yang Lebih Responsif */}
       <div className="row g-4 justify-content-center">
         {packages.map((pkg) => (
-          <div key={pkg.id} className="col-md-6 col-lg-4">
+          <div key={pkg.id} className="col-md-6 col-lg-5 col-xl-4">
             <motion.div
               variants={itemVars}
               whileHover={{ scale: 1.02, translateY: -5 }}
@@ -56,33 +58,36 @@ export default function StepPaket({ onNext }) {
             >
               {/* Header Kartu */}
               <div className="card-header bg-transparent border-0 pt-4 pb-0 text-center">
-                <h4 className="fw-bold text-dark">{pkg.name}</h4>
+                <h4 className="fw-bold text-dark mb-0">{pkg.name}</h4>
               </div>
 
-              <div className="card-body d-flex flex-column">
-                {/* Harga */}
+              <div className="card-body d-flex flex-column p-4">
+                {/* Harga Section */}
                 <div className="text-center mb-4">
-                  <span className="text-muted small">Mulai dari</span>
-                  <h2 className="fw-bold text-primary my-1">
-                    Rp {pkg.price.toLocaleString('id-ID')}
-                  </h2>
-                  <span className="badge bg-light text-dark border">
+                  <span className="text-muted small text-uppercase fw-bold ls-1">Investasi</span>
+                  <div className="my-2">
+                    <h2 className="fw-bold text-primary mb-0 text-nowrap">
+                      Rp {pkg.price.toLocaleString('id-ID')}
+                    </h2>
+                  </div>
+                  <span className="badge bg-light text-dark border px-3 py-2 rounded-pill">
+                    <i className="bi bi-layers me-1"></i>
                     Maks {pkg.max_section === null ? 'Unlimited' : `${pkg.max_section} Section`}
                   </span>
                 </div>
 
-                {/* Fitur */}
-                <ul className="list-unstyled mb-4 flex-grow-1">
+                {/* Fitur List */}
+                <ul className="list-unstyled mb-4 flex-grow-1 text-start">
                   {pkg.features?.map((f, i) => (
-                    <li key={i} className="mb-2 d-flex align-items-start">
-                      <i className="bi bi-check-circle-fill text-success me-2 mt-1"></i>
-                      <span className="text-secondary small">{f}</span>
+                    <li key={i} className="mb-3 d-flex align-items-start">
+                      <i className="bi bi-check-circle-fill text-success me-2 mt-1 flex-shrink-0"></i>
+                      <span className="text-secondary small lh-base">{f}</span>
                     </li>
                   ))}
                 </ul>
 
-                {/* Tombol Pilih (Visual Only) */}
-                <button className="btn btn-outline-primary w-100 rounded-pill mt-auto">
+                {/* Tombol Pilih */}
+                <button className="btn btn-outline-primary w-100 rounded-pill py-2 fw-bold mt-auto">
                   Pilih Paket Ini
                 </button>
               </div>
