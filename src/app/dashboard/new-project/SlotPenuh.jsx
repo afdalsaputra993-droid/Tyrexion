@@ -20,7 +20,7 @@ export default function SlotPenuh() {
               transition={{ delay: 0.2, type: "spring" }}
             >
               <div className="bg-warning bg-opacity-10 d-inline-flex p-4 rounded-circle">
-                <i className="bi bi-hourglass-split text-warning display-4"></i>
+                <i className="bi bi-hourglass-split text-secondary display-4"></i>
               </div>
             </motion.div>
 
