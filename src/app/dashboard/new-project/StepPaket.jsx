@@ -47,13 +47,13 @@ export default function StepPaket({ onNext }) {
       {/* Grid System yang Lebih Responsif */}
       <div className="row g-4 justify-content-center">
         {packages.map((pkg) => (
-          <div key={pkg.id} className="col-md-6 col-lg-5 col-xl-4">
+          <div key={pkg.id} className="col-md-6 col-lg-5 col-xl-6">
             <motion.div
               variants={itemVars}
               whileHover={{ scale: 1.02, translateY: -5 }}
               whileTap={{ scale: 0.98 }}
               onClick={() => onNext(pkg)}
-              className="card h-100 border-0 shadow-sm position-relative overflow-hidden"
+              className="card h-100 border-0 w-100 shadow-sm position-relative overflow-hidden"
               style={{ cursor: 'pointer', transition: 'all 0.3s ease' }}
             >
               {/* Header Kartu */}
