@@ -36,7 +36,7 @@ export default function StepPaket({ onNext }) {
       initial="hidden"
       animate="visible"
     >
-      {/* Header dengan lebar terbatas agar rapi di desktop */}
+      {/* Header */}
       <div className="text-center mb-5 px-3">
         <h2 className="fw-bold display-6 text-primary">Pilih Paket Website</h2>
         <p className="text-muted lead mx-auto" style={{ maxWidth: '600px' }}>
@@ -44,40 +44,50 @@ export default function StepPaket({ onNext }) {
         </p>
       </div>
 
-      {/* Grid System yang Lebih Responsif */}
+      {/* Grid System: Lebih lebar di Desktop (col-lg-4) */}
       <div className="row g-4 justify-content-center">
         {packages.map((pkg) => (
-          <div key={pkg.id} className="col-md-6 col-lg-6 col-xl-6">
+          <div key={pkg.id} className="col-12 col-md-6 col-lg-4">
             <motion.div
               variants={itemVars}
               whileHover={{ scale: 1.02, translateY: -5 }}
               whileTap={{ scale: 0.98 }}
               onClick={() => onNext(pkg)}
-              className="card h-100 border-0 shadow-sm position-relative overflow-hidden"
-              style={{ cursor: 'pointer', transition: 'all 0.3s ease' }}
+              // Hapus overflow-hidden agar konten tidak terpotong, gunakan z-index untuk border
+              className="card h-100 border-0 shadow-sm position-relative"
+              style={{ cursor: 'pointer', transition: 'all 0.3s ease', zIndex: 1 }}
             >
-              {/* Header Kartu */}
-              <div className="card-header bg-transparent border-0 pt-4 pb-0 text-center">
-                <h4 className="fw-bold text-dark mb-0">{pkg.name}</h4>
-              </div>
+              
+              {/* Efek Hover Border Accent (Diletakkan di luar card-body agar tidak memotong konten) */}
+              <div className="position-absolute top-0 start-0 w-100 h-100 border border-primary rounded-3" 
+                   style={{ opacity: 0, transition: 'opacity 0.3s', pointerEvents: 'none', zIndex: -1 }} 
+                   onMouseEnter={(e) => e.currentTarget.style.opacity = 1}
+                   onMouseLeave={(e) => e.currentTarget.style.opacity = 0}
+              />
 
-              <div className="card-body d-flex flex-column p-4">
+              <div className="card-body d-flex flex-column p-4 pt-5"> {/* Tambah padding atas pt-5 */}
+                
+                {/* Header Kartu */}
+                <div className="text-center mb-3">
+                  <h4 className="fw-bold text-dark mb-0">{pkg.name}</h4>
+                </div>
+
                 {/* Harga Section */}
-                <div className="text-center mb-4">
-                  <span className="text-muted small text-uppercase fw-bold ls-1">Investasi</span>
-                  <div className="my-2">
-                    <h2 className="fw-bold text-primary mb-0 text-nowrap">
-                      Rp {pkg.price.toLocaleString('id-ID')}
-                    </h2>
+                <div className="text-center mb-4 bg-light rounded-3 p-3 mx-2"> {/* Background tipis agar harga menonjol */}
+                  <span className="text-muted small text-uppercase fw-bold ls-1 d-block mb-1">Investasi</span>
+                  <h2 className="fw-bold text-primary mb-0 text-nowrap fs-3">
+                    Rp {pkg.price.toLocaleString('id-ID')}
+                  </h2>
+                  <div className="mt-2">
+                    <span className="badge bg-white text-dark border px-3 py-2 rounded-pill shadow-sm">
+                      <i className="bi bi-layers me-1 text-primary"></i>
+                      Maks {pkg.max_section === null ? 'Unlimited' : `${pkg.max_section} Section`}
+                    </span>
                   </div>
-                  <span className="badge bg-light text-dark border px-3 py-2 rounded-pill">
-                    <i className="bi bi-layers me-1"></i>
-                    Maks {pkg.max_section === null ? 'Unlimited' : `${pkg.max_section} Section`}
-                  </span>
                 </div>
 
                 {/* Fitur List */}
-                <ul className="list-unstyled mb-4 flex-grow-1 text-start">
+                <ul className="list-unstyled mb-4 flex-grow-1 text-start px-2">
                   {pkg.features?.map((f, i) => (
                     <li key={i} className="mb-3 d-flex align-items-start">
                       <i className="bi bi-check-circle-fill text-success me-2 mt-1 flex-shrink-0"></i>
@@ -87,17 +97,10 @@ export default function StepPaket({ onNext }) {
                 </ul>
 
                 {/* Tombol Pilih */}
-                <button className="btn btn-outline-primary w-100 rounded-pill py-2 fw-bold mt-auto">
+                <button className="btn btn-primary w-100 rounded-pill py-2 fw-bold mt-auto shadow-sm">
                   Pilih Paket Ini
                 </button>
               </div>
-              
-              {/* Efek Hover Border Accent */}
-              <div className="position-absolute top-0 start-0 w-100 h-100 border border-primary rounded-3" 
-                   style={{ opacity: 0, transition: 'opacity 0.3s', pointerEvents: 'none' }} 
-                   onMouseEnter={(e) => e.currentTarget.style.opacity = 1}
-                   onMouseLeave={(e) => e.currentTarget.style.opacity = 0}
-              />
             </motion.div>
           </div>
         ))}
