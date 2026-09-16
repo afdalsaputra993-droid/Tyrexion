@@ -30,6 +30,11 @@ export async function middleware(request) {
     return NextResponse.redirect(new URL('/login', request.url));
   }
 
+  // User yang sudah login & buka /dashboard persis (bukan sub-halaman) → arahkan ke /dashboard/user
+if (user && request.nextUrl.pathname === '/dashboard') {
+  return NextResponse.redirect(new URL('/dashboard/user', request.url));
+}
+
   // Proteksi /admin — wajib login DAN role admin
   if (request.nextUrl.pathname.startsWith('/admin')) {
     if (!user) {
@@ -43,7 +48,7 @@ export async function middleware(request) {
       .single();
 
     if (profile?.role !== 'admin') {
-      return NextResponse.redirect(new URL('/dashboard', request.url));
+      return NextResponse.redirect(new URL('/dashboard/user', request.url));
     }
   }
 

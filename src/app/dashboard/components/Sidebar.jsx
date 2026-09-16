@@ -62,8 +62,8 @@ export default function Sidebar() {
         }
       }}
       
-      className="position-fixed top-0 end-0 vh-100 bg-white shadow-lg d-lg-none d-flex flex-column"
-      style={{width: "280px", zIndex: 1030, touchAction: 'pan-y' }}
+      className="position-fixed top-0 end-0 bg-white shadow-lg d-lg-none d-flex flex-column"
+      style={{width: "280px", zIndex: 1030, touchAction: 'pan-y', height: '100dvh' }}
     >
       {/* 1. PROFIL */}
       <div className="d-flex w-100 gap-3 align-items-center border-bottom p-3">
@@ -123,9 +123,10 @@ export default function Sidebar() {
       </nav>
 
       {/* 3. LOGOUT */}
-      <div className="p-3 border-top mt-auto">
+        <div className="p-3 border-top flex-shrink-0 bg-white" 
+           style={{ paddingBottom: 'calc(1rem + env(safe-area-inset-bottom))' }}> {/* biar gak ketutup gesture bar iPhone */}
         <button 
-          onClick={handleLogout} // <- jangan "/" kalau mau logout beneran
+          onClick={handleLogout}
           className="btn btn-outline-danger w-100 d-flex align-items-center justify-content-center gap-2 fw-semibold"
         >
           <i className="bi bi-box-arrow-right"></i> 
