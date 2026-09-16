@@ -4,7 +4,7 @@ import MenuDrawer from "../components/MenuDrawer"
 import { SidebarProvider } from "@/context/SidebarContext";
 
 
-import Overview from "./components/Overview"
+import Overview from "../components/Overview"
 
 
 export default function Dashboard() {

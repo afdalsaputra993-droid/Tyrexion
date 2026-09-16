@@ -1,6 +1,7 @@
 "use client";
 import { useUser } from '@/context/UserContext';
 import Link from "next/link";
+import Image from "next/image";
 import { createClient } from '@/lib/supabase';
 import { useRouter } from 'next/navigation';
 import { usePathname } from "next/navigation";
