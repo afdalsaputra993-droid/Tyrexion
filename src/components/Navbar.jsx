@@ -36,7 +36,7 @@ export default function Navbar() {
       animate={{ y: showNav ? 0 : -100 }} // pake framer biar halus
             transition={{ duration: 0.3, ease: "easeInOut" }}
         
-      className="p-3 position-sticky top-0 start-0 w-100 bg-white shadow-sm" style={{zIndex: 2}}>
+      className="p-3 position-fixed top-0 start-0 w-100 bg-white shadow-sm" style={{zIndex: 2}}>
       <div className="container">
         <div className="d-flex justify-content-between align-items-center">
         
