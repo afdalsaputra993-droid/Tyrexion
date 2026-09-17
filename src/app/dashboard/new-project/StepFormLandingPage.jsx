@@ -58,11 +58,11 @@ export default function StepFormLandingPage({ selectedPaket, onSubmit, submittin
   return (
     <motion.div 
       initial={{ opacity: 0 }} animate={{ opacity: 1 }} 
-      className="container py-4"
+      className="container-fluid py-4"
     >
       <div className="row justify-content-center">
         {/* Menggunakan col-xl-7 agar lebih lebar di desktop besar, tapi tetap rapi di tablet */}
-        <div className="col-12 col-lg-11 col-xl-10 col-xxl-10">
+        <div className="col-12">
           
           <div className="text-center mb-4">
             <span className="badge bg-primary bg-opacity-10 text-primary px-3 py-2 rounded-pill mb-2">
