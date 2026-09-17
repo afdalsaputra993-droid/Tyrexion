@@ -9,7 +9,7 @@ import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
 
 const menu = [
-  { name: 'Overview', href: '/dashboard' },
+  { name: 'Overview', href: '/dashboard/user' },
   { name: 'Project Saya', href: '/dashboard/projectsaya' },
   { name: 'Pengaturan', href: '/dashboard/pengaturan' },
 ]
