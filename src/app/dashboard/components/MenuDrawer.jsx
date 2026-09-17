@@ -92,7 +92,7 @@ export default function MenuDrawer() {
                 className="btn btn-outline-danger w-100 d-flex align-items-center justify-content-center fw-semibold"
                 style={{gap: '8px'}} // <- jangan pake gap-2 bootstrap, pake inline style
               >
-                <span aria-hidden="true">🚪</span>
+                <span className="bi bi-box-arrow-right" aria-hidden="true"></span>
                 <span>Logout</span> {/* <- text dibungkus span sendiri */}
               </button>
             </div>
