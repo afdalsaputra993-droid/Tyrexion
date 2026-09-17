@@ -1,6 +1,6 @@
 export default function SyaratKetentuanPage() {
   return (
-    <div className="container py-5" style={{ maxWidth: 800 }}>
+    <div className="container py-5 mt-5" style={{ maxWidth: 800 }}>
       <h1 className="fw-bold mb-2">Syarat & Ketentuan</h1>
       <p className="text-secondary mb-4">Terakhir diperbarui: 17 September 2026</p>
 
