@@ -11,7 +11,7 @@ import { useEffect, useState } from 'react'
 import { useSidebar } from "@/context/SidebarContext";
 
 const menu = [
-  { name: 'Overview', href: '/dashboard' },
+  { name: 'Overview', href: '/user/dashboard' },
   { name: 'Project Saya', href: '/dashboard/projectsaya' },
   { name: 'Pengaturan', href: '/dashboard/user/pengaturan' },
 ]
