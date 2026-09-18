@@ -13,7 +13,7 @@ import { useSidebar } from "@/context/SidebarContext";
 const menu = [
   { name: 'Overview', href: '/dashboard' },
   { name: 'Project Saya', href: '/dashboard/projectsaya' },
-  { name: 'Pengaturan', href: '/dashboard/pengaturan' },
+  { name: 'Pengaturan', href: '/dashboard/user/pengaturan' },
 ]
 
 export default function Sidebar() {
