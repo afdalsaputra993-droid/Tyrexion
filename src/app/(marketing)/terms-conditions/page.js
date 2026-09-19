@@ -1,3 +1,9 @@
+
+export const metadata = {
+  title: "Syarat & Ketentuan — Tyrexion",
+  description: "Syarat dan ketentuan penggunaan layanan Tyrexion.",
+};
+
 export default function SyaratKetentuanPage() {
   return (
     <div className="container py-5" style={{ maxWidth: 800, marginTop: "80px"}}>

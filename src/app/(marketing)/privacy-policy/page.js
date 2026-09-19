@@ -1,3 +1,9 @@
+
+export const metadata = {
+  title: "Kebijakan Privasi — Tyrexion",
+  description: "Kebijakan privasi terkait pengumpulan dan penggunaan data pengguna Tyrexion.",
+};
+
 export default function KebijakanPrivasiPage() {
   return (
     <div className="container py-5" style={{ maxWidth: 800, marginTop: "80px" }}>
