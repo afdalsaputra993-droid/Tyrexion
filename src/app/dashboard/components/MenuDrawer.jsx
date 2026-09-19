@@ -10,7 +10,7 @@ import { useEffect, useState } from "react";
 
 const menu = [
   { name: 'Overview', href: '/dashboard/user' },
-  { name: 'Project Saya', href: '/dashboard/projectsaya' },
+  { name: 'Project Saya', href: '/dashboard/user/projectsaya' },
   { name: 'Pengaturan', href: '/dashboard/user/pengaturan' },
 ]
 

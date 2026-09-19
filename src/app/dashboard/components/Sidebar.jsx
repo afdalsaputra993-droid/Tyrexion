@@ -12,7 +12,7 @@ import { useSidebar } from "@/context/SidebarContext";
 
 const menu = [
   { name: 'Overview', href: '/dashboard/user' },
-  { name: 'Project Saya', href: '/dashboard/projectsaya' },
+  { name: 'Project Saya', href: '/dashboard/user/projectsaya' },
   { name: 'Pengaturan', href: '/dashboard/user/pengaturan' },
 ]
 
