@@ -1,170 +1,245 @@
 'use client';
-
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase';
-import { motion, AnimatePresence } from 'framer-motion';
 
-const STATUS_CONFIG = {
-  pending: { label: 'Menunggu Review', class: 'bg-warning text-dark' },
-  approved: { label: 'Disetujui', class: 'bg-info text-dark' },
-  in_progress: { label: 'Sedang Dikerjakan', class: 'bg-primary text-white' },
-  completed: { label: 'Selesai', class: 'bg-success text-white' },
-  rejected: { label: 'Ditolak', class: 'bg-danger text-white' },
-  expired: { label: 'Kadaluarsa', class: 'bg-secondary text-white' },
+const STATUS_OPTIONS = ['pending', 'approved', 'in_progress', 'completed', 'rejected', 'expired'];
+
+const DOMAIN_BADGE = {
+  waiting: { label: 'Belum ada penawaran', class: 'bg-secondary' },
+  offered: { label: 'Menunggu pilihan user', class: 'bg-warning text-dark' },
+  chosen: { label: 'Domain dipilih', class: 'bg-success' },
+  skipped: { label: 'Tanpa domain custom', class: 'bg-info text-dark' },
 };
 
-export default function ProjectDetailModal({ project, onClose, onDeleted }) {
+const rupiah = (n) => `Rp ${Number(n || 0).toLocaleString('id-ID')}`;
+
+export default function ProjectCard({ project, onUpdated }) {
   const supabase = createClient();
-  const [deleting, setDeleting] = useState(false);
+  const [status, setStatus] = useState(project.status);
+  const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
 
-  if (!project) return null;
+  const [offers, setOffers] = useState([]);
+  const [newName, setNewName] = useState('');
+  const [newPrice, setNewPrice] = useState('');
+  const [offerBusy, setOfferBusy] = useState(false);
+  const [offerError, setOfferError] = useState('');
 
-  const data = project.form_data || {};
-  const bisaDihapus = ['pending', 'rejected', 'expired'].includes(project.status);
-  const statusInfo = STATUS_CONFIG[project.status] || { label: project.status, class: 'bg-secondary' };
+  useEffect(() => {
+    async function fetchOffers() {
+      const { data } = await supabase
+        .from('domain_offers')
+        .select('*')
+        .eq('project_id', project.id)
+        .order('created_at', { ascending: true });
+      setOffers(data || []);
+    }
+    fetchOffers();
+  }, [project.id]);
 
-  const handleDelete = async () => {
-    if (!window.confirm('Apakah Anda yakin ingin menghapus project ini? Tindakan ini tidak dapat dibatalkan.')) return;
+  const locked = ['chosen', 'skipped'].includes(project.domain_status);
+  const domainStatus = locked
+    ? project.domain_status
+    : offers.length > 0 ? 'offered' : 'waiting';
+  const domainBadge = DOMAIN_BADGE[domainStatus];
+  const startBlocked = status === 'in_progress' && !locked;
 
-    setDeleting(true);
+  const handleAddOffer = async () => {
+    setOfferError('');
+    const name = newName.trim();
+    const price = parseInt(newPrice, 10);
+
+    if (!name || Number.isNaN(price) || price < 0) {
+      setOfferError('Isi nama domain dan harga (angka) dengan benar.');
+      return;
+    }
+
+    setOfferBusy(true);
+    const { data, error: insertErr } = await supabase
+      .from('domain_offers')
+      .insert({ project_id: project.id, domain_name: name, price })
+      .select()
+      .single();
+
+    if (insertErr) {
+      setOfferError('Gagal menambah penawaran: ' + insertErr.message);
+    } else {
+      setOffers((prev) => [...prev, data]);
+      setNewName('');
+      setNewPrice('');
+    }
+    setOfferBusy(false);
+  };
+
+  const handleDeleteOffer = async (offerId) => {
+    setOfferError('');
+    setOfferBusy(true);
+
+    const { data: deleted, error: delErr } = await supabase
+      .from('domain_offers')
+      .delete()
+      .eq('id', offerId)
+      .select();
+
+    if (delErr) {
+      setOfferError('Gagal menghapus: ' + delErr.message);
+    } else if (!deleted || deleted.length === 0) {
+      setOfferError('Penawaran tidak bisa dihapus (mungkin sudah terkunci).');
+    } else {
+      setOffers((prev) => prev.filter((o) => o.id !== offerId));
+    }
+    setOfferBusy(false);
+  };
+
+  const handleSave = async () => {
+    setSaving(true);
     setError('');
 
     try {
-      if (project.status === 'pending') {
-        const { error } = await supabase.rpc('delete_pending_project', { p_project_id: project.id });
-        if (error) throw error;
-      } else if (project.status === 'rejected' || project.status === 'expired') {
-        const { error: delErr } = await supabase.from('rejected_projects').delete().eq('id', project.id);
-        if (delErr) throw delErr;
+      const salinan = {
+        id: project.id,
+        user_id: project.user_id,
+        package: project.package,
+        complexity_points: project.complexity_points,
+        form_data: project.form_data,
+        created_at: project.created_at,
+        package_price: project.package_price,
+        domain_status: project.domain_status,
+        selected_domain_name: project.selected_domain_name,
+        selected_domain_price: project.selected_domain_price,
+      };
+
+      if (status === 'completed') {
+        const { error: insertErr } = await supabase.from('completed_projects').insert(salinan);
+        if (insertErr) throw insertErr;
+
+        const { error: deleteErr } = await supabase.from('projects').delete().eq('id', project.id);
+        if (deleteErr) throw deleteErr;
+
+      } else if (status === 'rejected' || status === 'expired') {
+        const { error: insertErr } = await supabase
+          .from('rejected_projects')
+          .insert({ ...salinan, final_status: status });
+        if (insertErr) throw insertErr;
+
+        const { error: deleteErr } = await supabase.from('projects').delete().eq('id', project.id);
+        if (deleteErr) throw deleteErr;
+
+      } else {
+        const { error: updateErr } = await supabase
+          .from('projects')
+          .update({ status })
+          .eq('id', project.id);
+        if (updateErr) throw updateErr;
       }
-      onDeleted();
-      onClose();
+
+      onUpdated();
     } catch (err) {
-      setError('Gagal menghapus: ' + err.message);
+      setError('Gagal update: ' + err.message);
     } finally {
-      setDeleting(false);
+      setSaving(false);
     }
   };
 
-  // Helper untuk menampilkan info
-  const InfoRow = ({ label, value, isLast = false }) => (
-    <div className={`row ${!isLast ? 'mb-3' : ''}`}>
-      <div className="col-sm-4 text-muted small fw-bold">{label}</div>
-      <div className="col-sm-8 text-dark">{value || '-'}</div>
-    </div>
-  );
+  const data = project.form_data || {};
 
   return (
-    <AnimatePresence>
-      <motion.div 
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        className="modal d-block"
-        style={{ backgroundColor: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)' }}
-        onClick={onClose}
-      >
-        <motion.div 
-          initial={{ scale: 0.9, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          exit={{ scale: 0.9, opacity: 0 }}
-          className="modal-dialog modal-dialog-centered modal-lg"
-          onClick={(e) => e.stopPropagation()}
-        >
-          <div className="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
-            
-            {/* Header Modal */}
-            <div className="modal-header bg-light border-bottom-0 px-4 py-3">
-              <div>
-                <h5 className="modal-title fw-bold mb-1">{data.nama_bisnis || 'Project Tanpa Nama'}</h5>
-                <span className={`badge ${statusInfo.class} rounded-pill px-3 py-2`}>
-                  {statusInfo.label}
-                </span>
-              </div>
-              <button type="button" className="btn-close bg-dark bg-opacity-10 rounded-circle p-2" onClick={onClose}></button>
-            </div>
+    <div className="card p-3 mb-3">
+      <h5 className="fw-bold">{data.nama_bisnis}</h5>
+      <p className="mb-1"><strong>Paket:</strong> {project.package}</p>
+      <p className="mb-1"><strong>Kategori Bisnis:</strong> {data.kategori_bisnis}</p>
+      <p className="mb-1"><strong>Target Konsumen:</strong> {data.target_konsumen}</p>
+      <p className="mb-1"><strong>Warna:</strong> {data.warna || '-'}</p>
+      <p className="mb-1"><strong>Section:</strong> {data.sections?.join(', ')}</p>
+      <p className="mb-1"><strong>Deskripsi:</strong> {data.deskripsi}</p>
+      <p className="mb-1"><strong>Referensi:</strong> {data.referensi || '-'}</p>
+      <p className="mb-1"><strong>Catatan:</strong> {data.catatan || '-'}</p>
+      <p className="mb-1"><strong>WhatsApp:</strong> {data.whatsapp}</p>
+      <p className="mb-3"><strong>Poin:</strong> {project.complexity_points}</p>
 
-            {/* Body Modal */}
-            <div className="modal-body p-4">
-              
-              {/* Bagian 1: Ringkasan Paket & Poin */}
-              <div className="row g-3 mb-4 p-3 bg-light rounded-3 mx-1">
-                <div className="col-md-6 border-end">
-                  <small className="text-muted d-block">Paket Dipilih</small>
-                  <span className="fw-bold text-primary fs-5">{project.package}</span>
-                </div>
-                <div className="col-md-6">
-                  <small className="text-muted d-block">Tingkat Kompleksitas</small>
-                  <span className="fw-bold text-dark fs-5">{project.complexity_points} Poin</span>
-                </div>
-              </div>
+      <hr />
 
-              {/* Bagian 2: Detail Bisnis */}
-              <h6 className="fw-bold text-primary mb-3 ps-2 border-start border-4 border-primary">Detail Bisnis</h6>
-              <InfoRow label="Kategori" value={data.kategori_bisnis} />
-              <InfoRow label="Target Konsumen" value={data.target_konsumen} />
-              <InfoRow label="Preferensi Warna" value={data.warna} isLast />
+      <div className="d-flex justify-content-between align-items-center mb-2">
+        <h6 className="fw-bold mb-0">Penawaran Domain</h6>
+        <span className={`badge rounded-pill ${domainBadge.class}`}>{domainBadge.label}</span>
+      </div>
 
-              {/* Bagian 3: Struktur Website */}
-              <h6 className="fw-bold text-primary mb-3 mt-4 ps-2 border-start border-4 border-primary">Struktur Website</h6>
-              <div className="mb-3">
-                <small className="text-muted d-block mb-2">Section yang Dipilih:</small>
-                <div className="d-flex flex-wrap gap-2">
-                  {data.sections && data.sections.length > 0 ? (
-                    data.sections.map((sec, i) => (
-                      <span key={i} className="badge bg-white border text-secondary px-3 py-2 rounded-pill shadow-sm">
-                        {sec}
-                      </span>
-                    ))
-                  ) : (
-                    <span className="text-muted fst-italic">Tidak ada section dipilih</span>
-                  )}
-                </div>
-              </div>
-              <InfoRow label="Deskripsi" value={data.deskripsi} />
-              <InfoRow label="Referensi Desain" value={data.referensi ? <a href={data.referensi} target="_blank" rel="noreferrer" className="text-decoration-none"><i className="bi bi-link-45deg me-1"></i>Lihat Link</a> : '-'} />
-              <InfoRow label="Catatan Tambahan" value={data.catatan} isLast />
+      {domainStatus === 'chosen' && (
+        <p className="mb-2">
+          <strong>Dipilih user:</strong> {project.selected_domain_name} ({rupiah(project.selected_domain_price)})
+        </p>
+      )}
+      {domainStatus === 'skipped' && (
+        <p className="mb-2 text-muted">User memilih tanpa domain custom (alamat gratis).</p>
+      )}
 
-              {/* Bagian 4: Kontak */}
-              <h6 className="fw-bold text-primary mb-3 mt-4 ps-2 border-start border-4 border-primary">Kontak Klien</h6>
-              <div className="d-flex align-items-center bg-light p-3 rounded-3">
-                <i className="bi bi-whatsapp text-success fs-4 me-3"></i>
-                <div>
-                  <small className="text-muted d-block">WhatsApp</small>
-                  <span className="fw-bold text-dark">{data.whatsapp || '-'}</span>
-                </div>
-              </div>
-
-              {error && (
-                <div className="alert alert-danger mt-3 py-2 small d-flex align-items-center">
-                  <i className="bi bi-exclamation-triangle-fill me-2"></i> {error}
-                </div>
-              )}
-            </div>
-
-            {/* Footer Modal */}
-            <div className="modal-footer bg-light border-top-0 px-4 py-3 justify-content-between">
-              <small className="text-muted">ID: {project.id.slice(0, 8)}...</small>
-              <div>
-                {bisaDihapus && (
-                  <button
-                    className="btn btn-outline-danger me-2 px-4 rounded-pill"
-                    onClick={handleDelete}
-                    disabled={deleting}
-                  >
-                    {deleting ? <><span className="spinner-border spinner-border-sm me-2"></span>Menghapus...</> : 'Hapus Project'}
-                  </button>
-                )}
-                <button className="btn btn-secondary px-4 rounded-pill" onClick={onClose}>
-                  Tutup
+      {offers.length > 0 && (
+        <ul className="list-group mb-2">
+          {offers.map((o) => (
+            <li key={o.id} className="list-group-item d-flex justify-content-between align-items-center">
+              <span>{o.domain_name} — {rupiah(o.price)}</span>
+              {!locked && (
+                <button
+                  className="btn btn-sm btn-outline-danger"
+                  onClick={() => handleDeleteOffer(o.id)}
+                  disabled={offerBusy}
+                >
+                  Hapus
                 </button>
-              </div>
-            </div>
+              )}
+            </li>
+          ))}
+        </ul>
+      )}
 
+      {!locked && (
+        <div className="row g-2 mb-2">
+          <div className="col-12 col-md-6">
+            <input
+              className="form-control"
+              placeholder="Nama domain, misal kopisenja.com"
+              value={newName}
+              onChange={(e) => setNewName(e.target.value)}
+            />
           </div>
-        </motion.div>
-      </motion.div>
-    </AnimatePresence>
+          <div className="col-7 col-md-3">
+            <input
+              type="number"
+              min="0"
+              className="form-control"
+              placeholder="Harga (Rp)"
+              value={newPrice}
+              onChange={(e) => setNewPrice(e.target.value)}
+            />
+          </div>
+          <div className="col-5 col-md-3">
+            <button className="btn btn-outline-primary w-100" onClick={handleAddOffer} disabled={offerBusy}>
+              Tambah
+            </button>
+          </div>
+        </div>
+      )}
+      {offerError && <p className="text-danger small">{offerError}</p>}
+
+      <hr />
+
+      <div className="d-flex gap-2 align-items-center">
+        <select className="form-select" value={status} onChange={(e) => setStatus(e.target.value)}>
+          {STATUS_OPTIONS.map((s) => (
+            <option key={s} value={s}>{s}</option>
+          ))}
+        </select>
+        <button className="btn btn-primary" onClick={handleSave} disabled={saving || startBlocked}>
+          {saving ? 'Menyimpan...' : 'Simpan'}
+        </button>
+      </div>
+
+      {startBlocked && (
+        <p className="text-danger small mt-2 mb-0">
+          Belum bisa dikerjakan: user harus memilih domain (atau tanpa domain custom) dulu.
+        </p>
+      )}
+      {error && <p className="text-danger mt-2">{error}</p>}
+    </div>
   );
 }
