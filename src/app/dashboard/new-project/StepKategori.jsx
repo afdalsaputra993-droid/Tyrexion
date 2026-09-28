@@ -13,10 +13,10 @@ export default function StepKategori({ onNext }) {
       available: true,
     },
     {
-      id: 'portfolio',
-      title: 'Portofolio',
-      desc: 'Galeri elegan untuk menampilkan karya terbaik.',
-      icon: 'bi-briefcase',
+      id: 'wedding',
+      title: 'pernikahan',
+      desc: 'Solusi undangan pernikahan digital premium dengan manajemen tamu, konfirmasi kehadiran, integrasi peta lokasi, dan galeri momen.',
+      icon: 'bi-envelope-paper-heart',
       available: false,
     }
   ];

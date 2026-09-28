@@ -57,9 +57,22 @@ const cookieStore = await cookies();
 );
   const { data: { user } } = await supabase.auth.getUser();
 
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": "Tyrexion",
+    "url": "https://tyrexion.vercel.app",
+    "description": "Jasa pembuatan website, mulai dari Landing Page berkualitas dengan harga terjangkau.",
+  };
   
   return (
     <html lang="id" className={`${geistSans.variable} ${geistMono.variable}`}>
+      <head>
+       <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
+      </head>
       <body className="bg-light">
          <UserProvider user={user}>
         {children}
