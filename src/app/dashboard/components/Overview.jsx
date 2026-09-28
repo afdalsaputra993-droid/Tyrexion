@@ -112,8 +112,14 @@ export default function Overview() {
                       <div>
                         <h5 className="mb-1 fw-semibold">{data.nama_bisnis || 'Tanpa Nama'}</h5>
                         <p className="mb-0 text-muted small text-capitalize">
-                          Paket {project.package}
-                        </p>
+  Paket {project.package}
+</p>
+<p className="mb-0 fw-semibold small">
+  Rp {(
+    (project.package_price || 0) +
+    (project.domain_status === 'chosen' ? (project.selected_domain_price || 0) : 0)
+  ).toLocaleString('id-ID')}
+</p>
                       </div>
                       <span className={`badge rounded-pill ${badge.class}`}>
                         {badge.label}

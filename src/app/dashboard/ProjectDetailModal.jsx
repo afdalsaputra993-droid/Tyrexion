@@ -2,30 +2,35 @@
 import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase';
 
-const STATUS_OPTIONS = ['pending', 'approved', 'in_progress', 'completed', 'rejected', 'expired'];
-
-const DOMAIN_BADGE = {
-  waiting: { label: 'Belum ada penawaran', class: 'bg-secondary' },
-  offered: { label: 'Menunggu pilihan user', class: 'bg-warning text-dark' },
-  chosen: { label: 'Domain dipilih', class: 'bg-success' },
-  skipped: { label: 'Tanpa domain custom', class: 'bg-info text-dark' },
+const STATUS_LABEL = {
+  pending: 'Menunggu Review',
+  approved: 'Disetujui',
+  in_progress: 'Sedang Dikerjakan',
+  completed: 'Selesai',
+  rejected: 'Ditolak',
+  expired: 'Kadaluarsa',
 };
 
 const rupiah = (n) => `Rp ${Number(n || 0).toLocaleString('id-ID')}`;
 
-export default function ProjectCard({ project, onUpdated }) {
+export default function ProjectDetailModal({ project, onClose, onDeleted }) {
   const supabase = createClient();
-  const [status, setStatus] = useState(project.status);
-  const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState('');
 
   const [offers, setOffers] = useState([]);
-  const [newName, setNewName] = useState('');
-  const [newPrice, setNewPrice] = useState('');
-  const [offerBusy, setOfferBusy] = useState(false);
-  const [offerError, setOfferError] = useState('');
+  const [choosing, setChoosing] = useState(false);
+  const [choiceError, setChoiceError] = useState('');
+
+  const isActive = project && ['pending', 'approved', 'in_progress'].includes(project.status);
+  const needsChoice = isActive && project?.domain_status === 'offered';
 
   useEffect(() => {
+    if (!project) return;
+    if (!needsChoice) {
+      setOffers([]);
+      return;
+    }
     async function fetchOffers() {
       const { data } = await supabase
         .from('domain_offers')
@@ -35,211 +40,147 @@ export default function ProjectCard({ project, onUpdated }) {
       setOffers(data || []);
     }
     fetchOffers();
-  }, [project.id]);
+  }, [project?.id, needsChoice]);
 
-  const locked = ['chosen', 'skipped'].includes(project.domain_status);
-  const domainStatus = locked
-    ? project.domain_status
-    : offers.length > 0 ? 'offered' : 'waiting';
-  const domainBadge = DOMAIN_BADGE[domainStatus];
-  const startBlocked = status === 'in_progress' && !locked;
+  if (!project) return null;
 
-  const handleAddOffer = async () => {
-    setOfferError('');
-    const name = newName.trim();
-    const price = parseInt(newPrice, 10);
+  const data = project.form_data || {};
+  const bisaDihapus = ['pending', 'rejected', 'expired'].includes(project.status);
 
-    if (!name || Number.isNaN(price) || price < 0) {
-      setOfferError('Isi nama domain dan harga (angka) dengan benar.');
+  const total = (project.package_price || 0) +
+    (project.domain_status === 'chosen' ? (project.selected_domain_price || 0) : 0);
+
+  const handleChoose = async (offerId) => {
+    setChoosing(true);
+    setChoiceError('');
+
+    const { error: rpcErr } = await supabase.rpc('choose_domain', {
+      p_project_id: project.id,
+      p_offer_id: offerId,
+    });
+
+    if (rpcErr) {
+      setChoiceError('Gagal menyimpan pilihan: ' + rpcErr.message);
+      setChoosing(false);
       return;
     }
 
-    setOfferBusy(true);
-    const { data, error: insertErr } = await supabase
-      .from('domain_offers')
-      .insert({ project_id: project.id, domain_name: name, price })
-      .select()
-      .single();
-
-    if (insertErr) {
-      setOfferError('Gagal menambah penawaran: ' + insertErr.message);
-    } else {
-      setOffers((prev) => [...prev, data]);
-      setNewName('');
-      setNewPrice('');
-    }
-    setOfferBusy(false);
+    setChoosing(false);
+    onDeleted(); // reuse: refresh daftar project di parent
+    onClose();
   };
 
-  const handleDeleteOffer = async (offerId) => {
-    setOfferError('');
-    setOfferBusy(true);
-
-    const { data: deleted, error: delErr } = await supabase
-      .from('domain_offers')
-      .delete()
-      .eq('id', offerId)
-      .select();
-
-    if (delErr) {
-      setOfferError('Gagal menghapus: ' + delErr.message);
-    } else if (!deleted || deleted.length === 0) {
-      setOfferError('Penawaran tidak bisa dihapus (mungkin sudah terkunci).');
-    } else {
-      setOffers((prev) => prev.filter((o) => o.id !== offerId));
-    }
-    setOfferBusy(false);
-  };
-
-  const handleSave = async () => {
-    setSaving(true);
+  const handleDelete = async () => {
+    setDeleting(true);
     setError('');
 
     try {
-      const salinan = {
-        id: project.id,
-        user_id: project.user_id,
-        package: project.package,
-        complexity_points: project.complexity_points,
-        form_data: project.form_data,
-        created_at: project.created_at,
-        package_price: project.package_price,
-        domain_status: project.domain_status,
-        selected_domain_name: project.selected_domain_name,
-        selected_domain_price: project.selected_domain_price,
-      };
+      if (project.status === 'pending') {
+        const { error: delErr } = await supabase.rpc('delete_pending_project', {
+          p_project_id: project.id,
+        });
+        if (delErr) throw delErr;
 
-      if (status === 'completed') {
-        const { error: insertErr } = await supabase.from('completed_projects').insert(salinan);
-        if (insertErr) throw insertErr;
-
-        const { error: deleteErr } = await supabase.from('projects').delete().eq('id', project.id);
-        if (deleteErr) throw deleteErr;
-
-      } else if (status === 'rejected' || status === 'expired') {
-        const { error: insertErr } = await supabase
-          .from('rejected_projects')
-          .insert({ ...salinan, final_status: status });
-        if (insertErr) throw insertErr;
-
-        const { error: deleteErr } = await supabase.from('projects').delete().eq('id', project.id);
-        if (deleteErr) throw deleteErr;
-
-      } else {
-        const { error: updateErr } = await supabase
-          .from('projects')
-          .update({ status })
-          .eq('id', project.id);
-        if (updateErr) throw updateErr;
+      } else if (project.status === 'rejected' || project.status === 'expired') {
+        const { error: delErr } = await supabase.from('rejected_projects').delete().eq('id', project.id);
+        if (delErr) throw delErr;
       }
 
-      onUpdated();
+      onDeleted();
+      onClose();
     } catch (err) {
-      setError('Gagal update: ' + err.message);
+      setError('Gagal menghapus: ' + err.message);
     } finally {
-      setSaving(false);
+      setDeleting(false);
     }
   };
 
-  const data = project.form_data || {};
-
   return (
-    <div className="card p-3 mb-3">
-      <h5 className="fw-bold">{data.nama_bisnis}</h5>
-      <p className="mb-1"><strong>Paket:</strong> {project.package}</p>
-      <p className="mb-1"><strong>Kategori Bisnis:</strong> {data.kategori_bisnis}</p>
-      <p className="mb-1"><strong>Target Konsumen:</strong> {data.target_konsumen}</p>
-      <p className="mb-1"><strong>Warna:</strong> {data.warna || '-'}</p>
-      <p className="mb-1"><strong>Section:</strong> {data.sections?.join(', ')}</p>
-      <p className="mb-1"><strong>Deskripsi:</strong> {data.deskripsi}</p>
-      <p className="mb-1"><strong>Referensi:</strong> {data.referensi || '-'}</p>
-      <p className="mb-1"><strong>Catatan:</strong> {data.catatan || '-'}</p>
-      <p className="mb-1"><strong>WhatsApp:</strong> {data.whatsapp}</p>
-      <p className="mb-3"><strong>Poin:</strong> {project.complexity_points}</p>
+    <div
+      className="modal d-block"
+      style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}
+      onClick={onClose}
+    >
+      <div className="modal-dialog modal-dialog-centered" onClick={(e) => e.stopPropagation()}>
+        <div className="modal-content rounded-4">
+          <div className="modal-header">
+            <h5 className="modal-title fw-bold">{data.nama_bisnis || 'Detail Project'}</h5>
+            <button type="button" className="btn-close" onClick={onClose}></button>
+          </div>
 
-      <hr />
+          <div className="modal-body">
+            <p><strong>Status:</strong> {STATUS_LABEL[project.status] || project.status}</p>
+            <p><strong>Paket:</strong> {project.package} ({rupiah(project.package_price)})</p>
+            <p><strong>Kategori Bisnis:</strong> {data.kategori_bisnis || '-'}</p>
+            <p><strong>Target Konsumen:</strong> {data.target_konsumen || '-'}</p>
+            <p><strong>Preferensi Warna:</strong> {data.warna || '-'}</p>
+            <p><strong>Section:</strong> {data.sections?.join(', ') || '-'}</p>
+            <p><strong>Deskripsi:</strong> {data.deskripsi || '-'}</p>
+            <p><strong>Referensi:</strong> {data.referensi || '-'}</p>
+            <p><strong>Catatan:</strong> {data.catatan || '-'}</p>
+            <p><strong>WhatsApp:</strong> {data.whatsapp || '-'}</p>
+            <p><strong>Poin:</strong> {project.complexity_points}</p>
 
-      <div className="d-flex justify-content-between align-items-center mb-2">
-        <h6 className="fw-bold mb-0">Penawaran Domain</h6>
-        <span className={`badge rounded-pill ${domainBadge.class}`}>{domainBadge.label}</span>
-      </div>
+            <hr />
 
-      {domainStatus === 'chosen' && (
-        <p className="mb-2">
-          <strong>Dipilih user:</strong> {project.selected_domain_name} ({rupiah(project.selected_domain_price)})
-        </p>
-      )}
-      {domainStatus === 'skipped' && (
-        <p className="mb-2 text-muted">User memilih tanpa domain custom (alamat gratis).</p>
-      )}
+            {project.domain_status === 'chosen' && (
+              <p><strong>Domain:</strong> {project.selected_domain_name} ({rupiah(project.selected_domain_price)})</p>
+            )}
+            {project.domain_status === 'skipped' && (
+              <p className="text-muted"><strong>Domain:</strong> Tanpa domain custom (alamat gratis)</p>
+            )}
+            {isActive && project.domain_status === 'waiting' && (
+              <p className="text-muted small">
+                Menunggu admin mengirim pilihan domain, akan diberitahukan lewat WhatsApp.
+              </p>
+            )}
 
-      {offers.length > 0 && (
-        <ul className="list-group mb-2">
-          {offers.map((o) => (
-            <li key={o.id} className="list-group-item d-flex justify-content-between align-items-center">
-              <span>{o.domain_name} — {rupiah(o.price)}</span>
-              {!locked && (
+            {needsChoice && (
+              <div className="p-3 bg-light rounded-3 mb-2">
+                <p className="fw-semibold mb-2">Admin sudah mengirim pilihan domain:</p>
+                {offers.map((o) => (
+                  <button
+                    key={o.id}
+                    className="btn btn-outline-primary w-100 mb-2 d-flex justify-content-between"
+                    onClick={() => handleChoose(o.id)}
+                    disabled={choosing}
+                  >
+                    <span>{o.domain_name}</span>
+                    <span>{rupiah(o.price)}</span>
+                  </button>
+                ))}
                 <button
-                  className="btn btn-sm btn-outline-danger"
-                  onClick={() => handleDeleteOffer(o.id)}
-                  disabled={offerBusy}
+                  className="btn btn-outline-secondary w-100"
+                  onClick={() => handleChoose(null)}
+                  disabled={choosing}
                 >
-                  Hapus
+                  Tanpa domain custom (alamat gratis)
                 </button>
-              )}
-            </li>
-          ))}
-        </ul>
-      )}
+                {choiceError && <p className="text-danger small mt-2 mb-0">{choiceError}</p>}
+              </div>
+            )}
 
-      {!locked && (
-        <div className="row g-2 mb-2">
-          <div className="col-12 col-md-6">
-            <input
-              className="form-control"
-              placeholder="Nama domain, misal kopisenja.com"
-              value={newName}
-              onChange={(e) => setNewName(e.target.value)}
-            />
+            <p className="fw-bold fs-5 mt-3">Total: {rupiah(total)}</p>
+
+            {error && <p className="text-danger">{error}</p>}
           </div>
-          <div className="col-7 col-md-3">
-            <input
-              type="number"
-              min="0"
-              className="form-control"
-              placeholder="Harga (Rp)"
-              value={newPrice}
-              onChange={(e) => setNewPrice(e.target.value)}
-            />
-          </div>
-          <div className="col-5 col-md-3">
-            <button className="btn btn-outline-primary w-100" onClick={handleAddOffer} disabled={offerBusy}>
-              Tambah
+
+          <div className="modal-footer">
+            {bisaDihapus && (
+              <button
+                className="btn btn-outline-danger"
+                onClick={handleDelete}
+                disabled={deleting}
+              >
+                {deleting ? 'Menghapus...' : 'Hapus Project'}
+              </button>
+            )}
+            <button className="btn btn-secondary" onClick={onClose}>
+              Tutup
             </button>
           </div>
         </div>
-      )}
-      {offerError && <p className="text-danger small">{offerError}</p>}
-
-      <hr />
-
-      <div className="d-flex gap-2 align-items-center">
-        <select className="form-select" value={status} onChange={(e) => setStatus(e.target.value)}>
-          {STATUS_OPTIONS.map((s) => (
-            <option key={s} value={s}>{s}</option>
-          ))}
-        </select>
-        <button className="btn btn-primary" onClick={handleSave} disabled={saving || startBlocked}>
-          {saving ? 'Menyimpan...' : 'Simpan'}
-        </button>
       </div>
-
-      {startBlocked && (
-        <p className="text-danger small mt-2 mb-0">
-          Belum bisa dikerjakan: user harus memilih domain (atau tanpa domain custom) dulu.
-        </p>
-      )}
-      {error && <p className="text-danger mt-2">{error}</p>}
     </div>
   );
 }
