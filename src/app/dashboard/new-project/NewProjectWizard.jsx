@@ -17,6 +17,7 @@ export default function NewProjectWizard() {
   const [step, setStep] = useState(1);
   const [kategori, setKategori] = useState(null);
   const [selectedPaket, setSelectedPaket] = useState(null);
+  const [domainChoice, setDomainChoice] = useState(null);
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
@@ -43,9 +44,11 @@ export default function NewProjectWizard() {
   setSubmitting(true);
 
   const { error } = await supabase.rpc('submit_project', {
-    p_package_slug: package_slug,
-    p_form_data: form_data,
-  });
+  p_package_slug: package_slug,
+  p_form_data: form_data,
+  p_domain_option_id: domainChoice?.domainOptionId || null,
+  p_domain_renewal: domainChoice?.domainRenewal || null,
+});
 
   if (error) {
     alert('Gagal mengirim: ' + error.message);
@@ -66,14 +69,19 @@ export default function NewProjectWizard() {
         <StepKategori onNext={(kat) => { setKategori(kat); setStep(2); }} />
       )}
       {step === 2 && (
-        <StepPaket onNext={(pkg) => { setSelectedPaket(pkg); setStep(3); }} />
-      )}
+  <StepPaket onNext={(pkg, domainChoice) => {
+    setSelectedPaket(pkg);
+    setDomainChoice(domainChoice);
+    setStep(3);
+  }} />
+)}
       {step === 3 && kategori === 'landing_page' && (
         <StepFormLandingPage
-          selectedPaket={selectedPaket}
-          onSubmit={handleSubmitForm}
-          submitting={submitting}
-        />
+  selectedPaket={selectedPaket}
+  domainChoice={domainChoice}
+  onSubmit={handleSubmitForm}
+  submitting={submitting}
+/>
       )}
     </div>
   );

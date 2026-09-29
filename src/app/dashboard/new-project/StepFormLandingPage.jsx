@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase';
 import { motion } from 'framer-motion';
 
-export default function StepFormLandingPage({ selectedPaket, onSubmit, submitting }) {
+export default function StepFormLandingPage({ selectedPaket, domainChoice, onSubmit, submitting }) {
   const [sectionOptions, setSectionOptions] = useState([]);
   const [namaBisnis, setNamaBisnis] = useState('');
   const [listKategoriBisnis, setListKategoriBisnis] = useState([]);
@@ -70,6 +70,13 @@ export default function StepFormLandingPage({ selectedPaket, onSubmit, submittin
             </span>
             <h2 className="fw-bold h3">Detail Project Landing Page</h2>
           </div>
+
+          {domainChoice?.domainLabel && (
+  <p className="text-secondary small mb-2">
+    Domain: {domainChoice.domainLabel}
+    {domainChoice.domainPrice > 0 ? ` (${domainChoice.domainPrice.toLocaleString('id-ID')})` : ' (Gratis)'}
+  </p>
+)}
 
           <form onSubmit={handleSubmit} className="bg-white p-3 p-md-4 rounded-4 shadow-sm border">
             
