@@ -16,8 +16,8 @@ const card = [
   },
   {
     icon: "bi-globe2",
-    judul: "Domain Sepenuhnya Milik Anda",
-    desk: "Domain website di-setup langsung di akun Anda sendiri — kendali penuh ada di tangan Anda, bukan kami."
+    judul: "Hosting Sepenuhnya Milik Anda",
+    desk: "Website di-deploy langsung di akun hosting Anda sendiri — kendali penuh ada di tangan Anda, bukan kami."
   }
 ]
 

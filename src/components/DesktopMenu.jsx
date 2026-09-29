@@ -5,7 +5,7 @@ import { useState } from 'react'
 
 const mainMenu = [
   { name: 'HOME', href: '/' },
-  { name: 'TENTANG', href: '/tentang' },
+  { name: 'KATEGORI WEBSITE', href: '/kategoriwebsite' },
   { name: 'PAKET', href: '/paket' },
 ]
 

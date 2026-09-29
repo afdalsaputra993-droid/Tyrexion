@@ -10,7 +10,7 @@ const card = [
   {
     id: 2,
     judul: "Briefing & Perencanaan",
-    desk: "Deskripsi: Kami susun rencana detail sesuai kebutuhan bisnis Anda, lalu mulai proses dengan DP 50%."
+    desk: "Kami susun rencana detail sesuai kebutuhan bisnis Anda, lalu mulai proses dengan DP 50%."
   },
   {
     id: 3,
@@ -20,7 +20,7 @@ const card = [
   {
     id: 4,
     judul: "Serah Terima",
-    desk: "Website selesai, domain aktif di akun Anda sendiri, dan pelunasan dilakukan — website siap digunakan sepenuhnya."
+    desk: "Website selesai dan aktif di akun hosting Anda sendiri, lalu pelunasan dilakukan — website siap digunakan sepenuhnya."
   }
 ]
 
