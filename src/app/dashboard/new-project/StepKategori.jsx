@@ -17,7 +17,7 @@ export default function StepKategori({ onNext }) {
       title: 'pernikahan',
       desc: 'Solusi undangan pernikahan digital premium dengan manajemen tamu, konfirmasi kehadiran, integrasi peta lokasi, dan galeri momen.',
       icon: 'bi-envelope-paper-heart',
-      available: false,
+      available: true,
     }
   ];
 

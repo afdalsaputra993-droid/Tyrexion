@@ -8,8 +8,8 @@ import { useSidebar } from "@/context/SidebarContext";
 // Menu utama
 const mainMenu = [
   { name: 'HOME', href: '/' },
+  { name: 'TENTANG KAMI', href: '/tentang' },
   { name: 'KATEGORI WEBSITE', href: '/kategoriwebsite' },
-  { name: 'PAKET', href: '/paket' },
 ]
 
 // Sub-menu untuk Legal
