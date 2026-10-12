@@ -145,18 +145,40 @@ export default function ProjectCard({ project, onUpdated }) {
 
   return (
     <div className="card p-3 mb-3">
-      <h5 className="fw-bold">{data.nama_bisnis}</h5>
-      <p className="mb-1"><strong>Paket:</strong> {project.package}</p>
-      <p className="mb-1"><strong>Kategori Bisnis:</strong> {data.kategori_bisnis}</p>
-      <p className="mb-1"><strong>Target Konsumen:</strong> {data.target_konsumen}</p>
-      <p className="mb-1"><strong>Warna:</strong> {data.warna || '-'}</p>
-      <p className="mb-1"><strong>Section:</strong> {data.sections?.join(', ')}</p>
-      <p className="mb-1"><strong>Deskripsi:</strong> {data.deskripsi}</p>
-      <p className="mb-1"><strong>Referensi:</strong> {data.referensi || '-'}</p>
-      <p className="mb-1"><strong>Catatan:</strong> {data.catatan || '-'}</p>
-      <p className="mb-1"><strong>WhatsApp:</strong> {data.whatsapp}</p>
-      <p className="mb-3"><strong>Poin:</strong> {project.complexity_points}</p>
+      <h5 className="fw-bold">
+  {project.category === 'wedding' ? (data.nama_panggilan || '-') : (data.nama_bisnis || '-')}
+</h5>
+<p className="mb-1"><strong>Kategori:</strong> {project.category === 'wedding' ? 'Wedding' : 'Landing Page'}</p>
+<p className="mb-1"><strong>Paket:</strong> {project.package}</p>
 
+{project.category === 'wedding' ? (
+  <>
+    <p className="mb-1"><strong>Mempelai:</strong> {data.nama_pria} & {data.nama_wanita}</p>
+    <p className="mb-1"><strong>Nama Panggilan:</strong> {data.nama_panggilan}</p>
+    <p className="mb-1"><strong>Orang Tua Pria:</strong> {data.ortu_pria}</p>
+    <p className="mb-1"><strong>Orang Tua Wanita:</strong> {data.ortu_wanita}</p>
+    <p className="mb-1"><strong>Tanggal:</strong> {data.tanggal_pernikahan}</p>
+    {data.jam_lokasi_akad && <p className="mb-1"><strong>Akad:</strong> {data.jam_lokasi_akad} — {data.alamat_akad}</p>}
+    {data.jam_lokasi_resepsi && <p className="mb-1"><strong>Resepsi:</strong> {data.jam_lokasi_resepsi} — {data.alamat_resepsi}</p>}
+    {data.link_maps && <p className="mb-1"><strong>Maps:</strong> {data.link_maps}</p>}
+    {data.cerita_singkat && <p className="mb-1"><strong>Cerita:</strong> {data.cerita_singkat}</p>}
+    {data.rekening_qris && <p className="mb-1"><strong>Rekening/QRIS:</strong> {data.rekening_qris}</p>}
+  </>
+) : (
+  <>
+    <p className="mb-1"><strong>Kategori Bisnis:</strong> {data.kategori_bisnis}</p>
+    <p className="mb-1"><strong>Target Konsumen:</strong> {data.target_konsumen}</p>
+    <p className="mb-1"><strong>Warna:</strong> {data.warna || '-'}</p>
+    <p className="mb-1"><strong>Section:</strong> {data.sections?.join(', ')}</p>
+    <p className="mb-1"><strong>Deskripsi:</strong> {data.deskripsi}</p>
+    <p className="mb-1"><strong>Referensi:</strong> {data.referensi || '-'}</p>
+  </>
+)}
+
+<p className="mb-1"><strong>Catatan:</strong> {data.catatan || '-'}</p>
+<p className="mb-1"><strong>WhatsApp:</strong> {data.whatsapp}</p>
+<p className="mb-3"><strong>Poin:</strong> {project.complexity_points}</p>
+      
       <hr />
 
       <div className="d-flex justify-content-between align-items-center mb-2">

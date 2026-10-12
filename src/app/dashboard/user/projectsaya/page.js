@@ -104,10 +104,14 @@ export default function ProjectSayaPage() {
                 <div className="card border-0 shadow-sm rounded-4">
                   <div className="card-body p-3 d-flex justify-content-between align-items-center">
                     <div>
-                      <h5 className="mb-1 fw-semibold">{data.nama_bisnis || 'Tanpa Nama'}</h5>
-                      <p className="mb-0 text-muted small text-capitalize">
-                        Paket {project.package}
-                      </p>
+                      <h5 className="mb-1 fw-semibold">
+  {project.category === 'wedding'
+    ? (data.nama_panggilan || 'Tanpa Nama')
+    : (data.nama_bisnis || 'Tanpa Nama')}
+</h5>
+<p className="mb-0 text-muted small text-capitalize">
+  {project.category === 'wedding' ? 'Wedding' : 'Landing Page'} — Paket {project.package}
+</p>
                     </div>
                     <span className={`badge rounded-pill ${badge.class}`}>
                       {badge.label}

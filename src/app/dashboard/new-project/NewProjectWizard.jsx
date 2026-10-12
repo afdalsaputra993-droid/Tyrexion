@@ -8,6 +8,7 @@ import StepPaket from './StepPaket';
 import StepFormLandingPage from './StepFormLandingPage';
 import StepPaketWedding from './StepPaketWedding';
 import StepDesainWedding from './StepDesainWedding';
+import StepFormWedding from './StepFormWedding';
 
 export default function NewProjectWizard() {
   const supabase = createClient();
@@ -65,6 +66,25 @@ export default function NewProjectWizard() {
     router.refresh();
   };
 
+  const handleSubmitFormWedding = async ({ package_slug, design_id, form_data }) => {
+  setSubmitting(true);
+
+  const { error } = await supabase.rpc('submit_wedding_project', {
+    p_package_slug: package_slug,
+    p_design_id: design_id,
+    p_form_data: form_data,
+  });
+
+  if (error) {
+    alert('Gagal mengirim: ' + error.message);
+    setSubmitting(false);
+    return;
+  }
+
+  router.push('/dashboard');
+  router.refresh();
+};
+
   if (checking) return <p className="p-4">Memeriksa ketersediaan slot...</p>;
   if (slotPenuh) return <SlotPenuh />;
 
@@ -108,13 +128,13 @@ export default function NewProjectWizard() {
         />
       )}
       {step === 4 && kategori === 'wedding' && (
-        <div className="text-center p-4">
-          <h5 className="fw-bold">Form Wedding — Segera Hadir</h5>
-          <p className="text-secondary">
-            Desain terpilih: {selectedDesain?.name}. Form isi konten sedang disiapkan.
-          </p>
-        </div>
-      )}
+  <StepFormWedding
+    selectedPaket={selectedPaket}
+    selectedDesain={selectedDesain}
+    onSubmit={handleSubmitFormWedding}
+    submitting={submitting}
+  />
+)}
     </div>
   );
 }

@@ -110,16 +110,35 @@ export default function ProjectDetailModal({ project, onClose, onDeleted }) {
 
           <div className="modal-body">
             <p><strong>Status:</strong> {STATUS_LABEL[project.status] || project.status}</p>
-            <p><strong>Paket:</strong> {project.package} ({rupiah(project.package_price)})</p>
-            <p><strong>Kategori Bisnis:</strong> {data.kategori_bisnis || '-'}</p>
-            <p><strong>Target Konsumen:</strong> {data.target_konsumen || '-'}</p>
-            <p><strong>Preferensi Warna:</strong> {data.warna || '-'}</p>
-            <p><strong>Section:</strong> {data.sections?.join(', ') || '-'}</p>
-            <p><strong>Deskripsi:</strong> {data.deskripsi || '-'}</p>
-            <p><strong>Referensi:</strong> {data.referensi || '-'}</p>
-            <p><strong>Catatan:</strong> {data.catatan || '-'}</p>
-            <p><strong>WhatsApp:</strong> {data.whatsapp || '-'}</p>
-            <p><strong>Poin:</strong> {project.complexity_points}</p>
+<p><strong>Kategori:</strong> {project.category === 'wedding' ? 'Wedding' : 'Landing Page'}</p>
+<p><strong>Paket:</strong> {project.package} ({rupiah(project.package_price)})</p>
+
+{project.category === 'wedding' ? (
+  <>
+    <p><strong>Mempelai Pria:</strong> {data.nama_pria || '-'}</p>
+    <p><strong>Mempelai Wanita:</strong> {data.nama_wanita || '-'}</p>
+    <p><strong>Nama Panggilan:</strong> {data.nama_panggilan || '-'}</p>
+    <p><strong>Tanggal Pernikahan:</strong> {data.tanggal_pernikahan || '-'}</p>
+    {data.jam_lokasi_akad && <p><strong>Akad:</strong> {data.jam_lokasi_akad} — {data.alamat_akad}</p>}
+    {data.jam_lokasi_resepsi && <p><strong>Resepsi:</strong> {data.jam_lokasi_resepsi} — {data.alamat_resepsi}</p>}
+    {data.link_maps && <p><strong>Maps:</strong> {data.link_maps}</p>}
+    {data.cerita_singkat && <p><strong>Cerita:</strong> {data.cerita_singkat}</p>}
+    {data.rekening_qris && <p><strong>Rekening/QRIS:</strong> {data.rekening_qris}</p>}
+  </>
+) : (
+  <>
+    <p><strong>Kategori Bisnis:</strong> {data.kategori_bisnis || '-'}</p>
+    <p><strong>Target Konsumen:</strong> {data.target_konsumen || '-'}</p>
+    <p><strong>Preferensi Warna:</strong> {data.warna || '-'}</p>
+    <p><strong>Section:</strong> {data.sections?.join(', ') || '-'}</p>
+    <p><strong>Deskripsi:</strong> {data.deskripsi || '-'}</p>
+    <p><strong>Referensi:</strong> {data.referensi || '-'}</p>
+  </>
+)}
+
+<p><strong>Catatan:</strong> {data.catatan || '-'}</p>
+<p><strong>WhatsApp:</strong> {data.whatsapp || '-'}</p>
+<p><strong>Poin:</strong> {project.complexity_points}</p>
 
             <hr />
 
